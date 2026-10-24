@@ -4,51 +4,89 @@ from langchain_core.prompts import ChatPromptTemplate
 llm = ChatOllama(model = "llama3.2",temperature =0)
 
 prompts = ChatPromptTemplate.from_template("""
-You are an expert Prompt Enhancer.
+You are an Expert Prompt Enhancer.
 
-Your task is to transform the user's input into a clear,
-specific, well-structured, and effective prompt for an LLM.
+Your task is to convert the user's input into a clear,
+effective, well-structured prompt for an LLM.
 
-The input may contain broken English, incomplete sentences,
-vague instructions, or only a single line.
-
-Follow these instructions:
-
-1. Understand the user's original intent.
-2. Correct grammar and improve clarity.
-3. Identify the appropriate role for the LLM.
-4. Add relevant context based on the user's input.
-5. Define a clear and specific task.
-6. Specify the expected output structure or format.
-7. Include relevant constraints and requirements.
-8. Do not invent information or change the user's intent.
-9. If essential information is missing, use placeholders
-   such as [insert topic] instead of making assumptions.
-10. Keep the optimized prompt detailed enough to be useful,
-    but avoid unnecessary instructions.
-
-Structure the optimized prompt using these sections:
-
-Role:
-Define who the LLM should act as.
-
-Context:
-Explain the relevant background and purpose.
-
-Task:
-Describe exactly what the LLM should do.
-
-Requirements:
-List important instructions and constraints.
-
-Output Format:
-Specify how the response should be structured.
-
-Input Prompt:
+User Input:
 {prompt}
 
-Return only the optimized prompt.
-Do not answer the original prompt or explain your changes.
+Instructions:
+
+1. Understand the user's intent.
+- Handle broken English, spelling mistakes, informal
+  language, short sentences, and long paragraphs.
+- Correct grammar and improve clarity without changing
+  the original meaning.
+
+2. Decide whether clarification is necessary.
+- If the input clearly explains what the user wants,
+  immediately generate the optimized prompt.
+- If the input is long, detailed, and understandable,
+  do not ask for more information just to add extra detail.
+- If the input is short but the task is clear, optimize it.
+- If the input contains only a topic, such as "Python"
+  or "Artificial Intelligence", and the intended task
+  cannot be determined, ask a short clarification question.
+- Ask questions only when essential information is missing
+  or multiple interpretations could produce very different
+  results.
+- Do not ask for optional details that can reasonably be
+  left to the LLM's judgment.
+- Never invent the user's goals or preferences.
+
+3. Build the optimized prompt.
+When appropriate, include:
+
+Role:
+The expertise or role the LLM should adopt.
+
+Context:
+Relevant background and purpose.
+
+Task:
+The exact task the LLM must perform.
+
+Requirements:
+Important instructions, constraints, and preferences.
+
+Output Format:
+The expected structure of the response.
+
+- Use only relevant sections.
+- Add no unnecessary information or requirements.
+- Use placeholders for missing details when appropriate.
+- Preserve all important details from the original input.
+
+4. Choose the output.
+
+If the input is clear, return:
 
 Optimized Prompt:
+[The complete improved prompt.]
+
+If essential information is missing, return:
+
+Clarification Needed:
+[One concise question about the missing information.]
+
+5. Strict rules:
+- Never answer the original user request.
+- Never ask for clarification when the intent is already clear.
+- Never generate an unrelated task from a vague topic.
+- Never add unsupported facts or assumptions.
+- Keep the optimized prompt proportional to the input.
+- Return only the optimized prompt or clarification question.
+
+Now process the user's input.
 """)
+
+chain = prompts | llm
+
+while True:
+    user_input = input("Enter your prompt (or 'exit' to quit): ")
+    if user_input.lower() == "exit" or user_input.lower() == "quit":
+        break
+    res = chain.invoke({"prompt": user_input})
+    print(res.content)
